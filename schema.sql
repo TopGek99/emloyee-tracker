@@ -26,14 +26,3 @@ CREATE TABLE employee (
     FOREIGN KEY (role_id) REFERENCES role_(id),
     FOREIGN KEY (manager_id) REFERENCES employee(id)
 );
-
-SELECT employee.id,employee.first_name,employee.last_name,role_.title,department.name_,role_.salary,concat(manager.first_name,' ',manager.last_name) AS manager FROM employee
-INNER JOIN role_ ON employee.role_id = role_.id
-INNER JOIN department ON role_.department_id = department.id AND department.name_ = "Sales"
-JOIN employee AS manager ON manager.id = employee.manager_id
-UNION
-SELECT employee.id,employee.first_name,employee.last_name,role_.title,department.name_,role_.salary,employee.manager_id AS manager FROM employee
-INNER JOIN role_ ON employee.role_id = role_.id
-INNER JOIN department ON role_.department_id = department.id  AND department.name_ = "Sales"
-JOIN employee AS manager ON employee.manager_id IS NULL
-ORDER BY id ASC;

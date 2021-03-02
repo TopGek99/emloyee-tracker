@@ -17,7 +17,6 @@ const connection = mysql.createConnection({
 connection.connect((err) => {
 	if (err) throw err;
 	init();
-	// connection.end();
 });
 
 const init = () => {
@@ -38,20 +37,22 @@ const init = () => {
 				"Add Role",
 				"Remove Role",
 				"View All Departments",
-				"Add Departments",
+				"Add Department",
 				"Remove Department",
 				"View Department Budget Usage",
+				"Exit",
 			],
 		})
 		.then((answers) => {
 			switch (answers.decision) {
 				case "View All Employees":
 					viewEmployees();
-					init();
 					break;
 				case "View All Employees By Department":
 					viewEmployeesByDep();
-					init();
+					break;
+				case "View All Employees By Manager":
+					viewEmployeesByManager();
 					break;
 				default:
 					break;
@@ -63,6 +64,7 @@ const viewEmployees = () => {
 	connection.query(queries.allEmployeesQuery, (err, res) => {
 		if (err) throw err;
 		console.table(res);
+		init();
 	});
 };
 
@@ -80,7 +82,31 @@ const viewEmployeesByDep = () => {
 				(err, res) => {
 					if (err) throw err;
 					console.table(res);
+					init();
 				}
 			);
 		});
+};
+
+const viewEmployeesByManager = () => {
+	connection.query(
+		"SELECT id, CONCAT(first_name,' ',last_name) AS manager FROM employee WHERE manager_id IS NULL;",
+		(err, res) => {
+			console.log(res);
+			var managers = [];
+			res.forEach((obj) => {
+				managers.push(obj.manager);
+			});
+		}
+	);
+	// inquirer
+	// 	.prompt({
+	// 		name: "manager",
+	// 		message: "Which manager's employees would you like to view?",
+	// 		type: "list",
+	// 		choices: managers,
+	// 	})
+	// 	.then((answers) => {
+	// 		connection.query();
+	// 	});
 };
