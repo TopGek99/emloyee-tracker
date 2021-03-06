@@ -9,12 +9,12 @@ VALUES ('Sales Lead',100000,1),('Salesperson',60000,1),
 ('Account Manager',110000,3),('Accountant',65000,3),
 ('Legal Team Lead',135000,4),('Lawyer',100000,4);
 
-INSERT INTO employee (first_name,last_name,role_id,manager_id)
-VALUES ('Nadir','Clegg',1,null),
-('Marina','King',2,1),
-('Amos','Adam',3,null),
-('Amrita','Burton',4,3),
-('Russell','Hawkins',5,null),
-('Bea','Stone',6,5),
-('Terry','Wallis',7,null),
-('Paolo','Brewer',8,7);
+INSERT INTO employee (first_name,last_name,role_id,manager_id,ismanager)
+VALUES ('Nadir','Clegg',1,null,true),
+('Marina','King',2,1,false),
+('Amos','Adam',3,null,true),
+('Amrita','Burton',4,3,false),
+('Russell','Hawkins',5,null,true),
+('Bea','Stone',6,5,false),
+('Terry','Wallis',7,null,false),
+('Paolo','Brewer',8,7,false);
