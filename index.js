@@ -20,6 +20,7 @@ connection.connect((err) => {
 });
 
 const init = () => {
+  updateManagers();
   inquirer
     .prompt({
       name: "decision",
@@ -60,10 +61,41 @@ const init = () => {
         case "Remove Employee":
           removeEmployee();
           break;
+        case "Update Employee Role":
+          updateEmployeeRole();
+          break;
+        case "Update Employee Manager":
+          updateEmployeeManager();
+          break;
+        case "View All Roles":
+          viewRoles();
+          break;
+        case "Add Role":
+          addRole();
+          break;
+        case "Remove Role":
+          updateEmployeeRole();
+          break;
+        case "View All Departments":
+          updateEmployeeRole();
+          break;
+        case "Add Department":
+          updateEmployeeRole();
+          break;
+        case "Remove Department":
+          updateEmployeeRole();
+          break;
+        case "View Department Budget Usage":
+          updateEmployeeRole();
+          break;
         default:
           break;
       }
     });
+};
+
+const updateManagers = () => {
+  connection.query(queries.updateManagersQuery, (err, res) => {});
 };
 
 const viewEmployees = () => {
@@ -130,7 +162,6 @@ const addEmployee = () => {
   connection.query(`SELECT title,id,department_id FROM role_;`, (err, res) => {
     let roleObj = res;
     let roles = roleObj.map((role) => role.title);
-
     inquirer
       .prompt([
         {
@@ -230,4 +261,150 @@ ${answers.empRemove} Removed Successfully!
         });
     }
   );
+};
+
+const updateEmployeeRole = () => {
+  connection.query(
+    `SELECT id,CONCAT(employee.first_name,' ',employee.last_name) AS emp FROM employee;`,
+    (err, res) => {
+      let empObj = res;
+      let employees = empObj.map((emp) => emp.emp);
+      inquirer
+        .prompt({
+          name: "empUpdate",
+          message: "Which employee would you like to update the role of?",
+          type: "list",
+          choices: employees,
+        })
+        .then((answers) => {
+          let empAnswer = answers;
+          connection.query(`SELECT title,id FROM role_;`, (err, res) => {
+            let roleObj = res;
+            let roles = roleObj.map((role) => role.title);
+            inquirer
+              .prompt({
+                name: "role",
+                message: "What role would you like to update to?",
+                type: "list",
+                choices: roles,
+              })
+              .then((answers) => {
+                connection.query(
+                  `UPDATE employee SET role_id = ${
+                    roleObj.find((role) => role.title == answers.role).id
+                  } WHERE id = ${
+                    empObj.find((emp) => emp.emp == empAnswer.empUpdate).id
+                  }`,
+                  (err, res) => {
+                    console.log(`
+${empAnswer.empUpdate}'s role successfully updated to ${answers.role}!
+                        `);
+                    init();
+                  }
+                );
+              });
+          });
+        });
+    }
+  );
+};
+
+const updateEmployeeManager = () => {
+  connection.query(
+    `SELECT id,CONCAT(employee.first_name,' ',employee.last_name) AS emp FROM employee;`,
+    (err, res) => {
+      let empObj = res;
+      let employees = empObj.map((emp) => emp.emp);
+      inquirer
+        .prompt({
+          name: "empUpdate",
+          message: "Which employee would you like to update the manager of?",
+          type: "list",
+          choices: employees,
+        })
+        .then((answers) => {
+          let empAnswer = answers;
+          connection.query(
+            `SELECT id,CONCAT(first_name,' ',last_name) AS manager FROM employee WHERE ismanager;`,
+            (err, res) => {
+              let manObj = res;
+              manObj.push({
+                id: null,
+                manager: "They Do Not Have a Manager (They Are One)",
+              });
+              let managers = res.map((manager) => manager.manager);
+              inquirer
+                .prompt({
+                  name: "manager",
+                  message: "Who is your employees new manager?",
+                  type: "list",
+                  choices: managers,
+                })
+                .then((answers) => {
+                  connection.query(
+                    `UPDATE employee SET manager_id = ${
+                      manObj.find(
+                        (manager) => manager.manager == answers.manager
+                      ).id
+                    } WHERE id = ${
+                      empObj.find((emp) => emp.emp == empAnswer.empUpdate).id
+                    }`,
+                    (err, res) => {
+                      console.log(`
+${empAnswer.empUpdate}'s manager successfully updated to ${answers.manager}!
+                        `);
+                      init();
+                    }
+                  );
+                });
+            }
+          );
+        });
+    }
+  );
+};
+
+const viewRoles = () => {
+  connection.query(
+    `SELECT role_.title AS role,role_.salary,department.name_ AS department FROM role_
+INNER JOIN department ON role_.department_id = department.id;`,
+    (err, res) => {
+      console.table(res);
+      init();
+    }
+  );
+};
+
+const addRole = () => {
+  connection.query(`SELECT name_,id FROM department;`, (err, res) => {
+    let depObj = res;
+    let departments = depObj.map((department) => department.name_);
+    inquirer
+      .prompt([
+        {
+          name: "role_title",
+          message: "What is the title of the new role?",
+          type: "input",
+        },
+        {
+          name: "role_salary",
+          message: "What is the starting salary for this role?",
+          type: "input",
+        },
+        {
+          name: "department",
+          message: "What department is this role in?",
+          type: "list",
+          choices: departments,
+        },
+      ])
+      .then((answers) => {
+        connection.query(queries.addRoleQuery(depObj, answers), (err, res) => {
+          console.log(`
+Successfully added new role ${answers.role_title}!
+                    `);
+          init();
+        });
+      });
+  });
 };

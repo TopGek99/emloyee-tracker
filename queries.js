@@ -1,3 +1,7 @@
+const updateManagersQuery = `UPDATE employee
+SET ismanager = true, manager_id = null
+WHERE role_id = 1 OR role_id = 3 OR role_id = 5 OR role_id = 7;`;
+
 const allEmployeesQuery = `SELECT employee.id,employee.first_name,employee.last_name,role_.title,department.name_,role_.salary,CONCAT(manager.first_name," ",manager.last_name)
     AS manager
     FROM employee
@@ -54,8 +58,17 @@ const addEmployeeQuery = (roles, managers, initialAnswers, managerAnswer) => {
   })`;
 };
 
+const addRoleQuery = (departments, answers) => {
+  return `INSERT INTO role_ (title,salary,department_id)
+VALUES ('${answers.role_title}',${answers.role_salary},${
+    departments.find((department) => department.name_ == answers.department).id
+  })`;
+};
+
+exports.updateManagersQuery = updateManagersQuery;
 exports.allEmployeesQuery = allEmployeesQuery;
 exports.employeesByDepQuery = employeesByDepQuery;
 exports.employeesByManagerQuery = employeesByManagerQuery;
 exports.getManagersByDepQuery = getManagersByDepQuery;
 exports.addEmployeeQuery = addEmployeeQuery;
+exports.addRoleQuery = addRoleQuery;
