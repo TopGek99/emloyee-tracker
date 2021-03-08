@@ -57,6 +57,9 @@ const init = () => {
         case "Add Employee":
           addEmployee();
           break;
+        case "Remove Employee":
+          removeEmployee();
+          break;
         default:
           break;
       }
@@ -163,7 +166,7 @@ const addEmployee = () => {
             inquirer
               .prompt({
                 name: "manager",
-                message: "What is your employees manager?",
+                message: "Who is your employees manager?",
                 type: "list",
                 choices: managers,
               })
@@ -176,7 +179,9 @@ const addEmployee = () => {
                     answers
                   ),
                   (err, res) => {
-                    console.log("\nEmployee Added Successfully!\n");
+                    console.log(`
+Welcome to the team ${firstAnswers.first_name}!
+                    `);
                     init();
                   }
                 );
@@ -187,6 +192,42 @@ const addEmployee = () => {
   });
 };
 
-// const removeEmployee = () => {
-
-// }
+const removeEmployee = () => {
+  connection.query(
+    `SELECT id,CONCAT(employee.first_name,' ',employee.last_name) AS emp FROM employee;`,
+    (err, res) => {
+      let employeeObj = res;
+      let employees = employeeObj.map((emp) => emp.emp);
+      inquirer
+        .prompt({
+          name: "empRemove",
+          message: "Which employee would you like to remove?",
+          type: "list",
+          choices: employees,
+        })
+        .then((answers) => {
+          console.log(employeeObj.find((emp) => emp.emp == answers.empRemove));
+          connection.query(
+            `DELETE FROM employee WHERE id = ${
+              employeeObj.find((emp) => emp.emp == answers.empRemove).id
+            }`,
+            (err, res) => {
+              //   console.log(err);
+              if (res == undefined) {
+                console.log(
+                  `
+Could not remove ${answers.empRemove} (make sure they are not another employee's manager)
+                  `
+                );
+              } else {
+                console.log(`
+${answers.empRemove} Removed Successfully!
+                `);
+              }
+              init();
+            }
+          );
+        });
+    }
+  );
+};
