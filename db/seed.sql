@@ -16,5 +16,5 @@ VALUES ('Nadir','Clegg',1,null,true),
 ('Amrita','Burton',4,3,false),
 ('Russell','Hawkins',5,null,true),
 ('Bea','Stone',6,5,false),
-('Terry','Wallis',7,null,false),
+('Terry','Wallis',7,null,true),
 ('Paolo','Brewer',8,7,false);

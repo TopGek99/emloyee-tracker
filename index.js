@@ -124,59 +124,69 @@ const viewEmployeesByManager = () => {
 };
 
 const addEmployee = () => {
-  connection.query(`SELECT title,id FROM role_;`, (err, res) => {
-    // console.log(res);
+  connection.query(`SELECT title,id,department_id FROM role_;`, (err, res) => {
     let roleObj = res;
     let roles = roleObj.map((role) => role.title);
-    connection.query(
-      `SELECT id,CONCAT(first_name,' ', last_name) AS manager FROM employee WHERE ismanager = true;`,
-      (err, res) => {
-        let manObj = res;
-        manObj.push({
-          id: null,
-          manager: "They Do Not Have a Manager (They Are One)",
-        });
-        let managers = res.map((manager) => manager.manager);
-        inquirer
-          .prompt([
-            {
-              name: "first_name",
-              message: "What is your employees first name?",
-              type: "input",
-            },
-            {
-              name: "last_name",
-              message: "What is your employees last name?",
-              type: "input",
-            },
-            {
-              name: "role",
-              message: "What is your employees role?",
-              type: "list",
-              choices: roles,
-            },
-            {
-              name: "manager",
-              message: "Who is your employees manager?",
-              type: "list",
-              choices: managers,
-            },
-          ])
-          .then((answers) => {
-            connection.query(
-              `INSERT INTO employee (first_name,last_name,role_id,manager_id,ismanager) VALUES ('${
-                answers.first_name
-              }','${answers.last_name}',${
-                roleObj.find((role) => role.title == answers.role).id
-              },${
-                manObj.find((manager) => manager.manager == answers.manager).id
-              },${
-                manObj.find((manager) => manager.manager == answers.manager)
-                  .id == null
-              })`
-            );
-          });
-      }
-    );
+
+    inquirer
+      .prompt([
+        {
+          name: "first_name",
+          message: "What is your employees first name?",
+          type: "input",
+        },
+        {
+          name: "last_name",
+          message: "What is your employees last name?",
+          type: "input",
+        },
+        {
+          name: "role",
+          message: "What is your employees role?",
+          type: "list",
+          choices: roles,
+        },
+      ])
+      .then((answers) => {
+        let firstAnswers = answers;
+        connection.query(
+          queries.getManagersByDepQuery(
+            roleObj.find((role) => role.title == answers.role).department_id
+          ),
+          (err, res) => {
+            let manObj = res;
+            manObj.push({
+              id: null,
+              manager: "They Do Not Have a Manager (They Are One)",
+            });
+            let managers = res.map((manager) => manager.manager);
+            inquirer
+              .prompt({
+                name: "manager",
+                message: "What is your employees manager?",
+                type: "list",
+                choices: managers,
+              })
+              .then((answers) => {
+                connection.query(
+                  queries.addEmployeeQuery(
+                    roleObj,
+                    manObj,
+                    firstAnswers,
+                    answers
+                  ),
+                  (err, res) => {
+                    console.log("\nEmployee Added Successfully!\n");
+                    init();
+                  }
+                );
+              });
+          }
+        );
+      });
   });
 };
+
+// const removeEmployee = () => {
+
+// }
